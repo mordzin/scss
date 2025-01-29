@@ -1,0 +1,103 @@
+@use 'config' as *;
+@use 'sass:map';
+
+// Media Query Mixins
+@mixin breakpoint($size) {
+  @if map.has-key($breakpoints, $size) {
+    @media (min-width: map.get($breakpoints, $size)) {
+      @content;
+    }
+  }
+}
+
+// Responsive Property Mixin
+@mixin responsive-property($property, $value) {
+  #{$property}: $value;
+
+  @each $breakpoint, $width in $breakpoints {
+    @include breakpoint($breakpoint) {
+      &\:#{$breakpoint} {
+        #{$property}: $value;
+      }
+    }
+  }
+}
+
+// Hover State Mixin
+@mixin hover {
+  @media (hover: hover) {
+    :hover {
+      @content;
+    }
+  }
+}
+
+// Focus State Mixin
+@mixin focus {
+  :focus {
+    @content;
+  }
+}
+
+// Active State Mixin
+@mixin active {
+  :active {
+    @content;
+  }
+}
+
+// Disabled State Mixin
+@mixin disabled {
+  :disabled {
+    @content;
+  }
+}
+
+// Dark Mode Mixin
+@mixin dark-mode {
+  @media (prefers-color-scheme: dark) {
+    @content;
+  }
+}
+
+// RTL Support Mixin
+@mixin rtl {
+  [dir='rtl'] & {
+    @content;
+  }
+}
+
+// Truncate Text
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Center Flex
+@mixin center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Center Absolute
+@mixin center-absolute {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// Hide Visually
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,7 +1,38 @@
 {
   "name": "scss",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/style.css",
+  "module": "style.scss",
+  "files": [
+    "dist",
+    "*.scss"
+  ],
+  "scripts": {
+    "build": "sass style.scss:dist/style.css --style compressed",
+    "watch": "sass style.scss:dist/style.css --watch",
+    "dev": "sass style.scss:dist/style.css --watch --style expanded",
+    "lint": "stylelint \"**/*.scss\"",
+    "format": "prettier --write \"**/*.scss\"",
+    "test": "jest",
+    "prepare": "yarn build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-scss-transform": "^1.0.3",
+    "postcss": "^8.4.35",
+    "prettier": "^3.2.5",
+    "sass": "^1.70.0",
+    "stylelint": "^16.2.1",
+    "stylelint-config-standard-scss": "^13.0.0",
+    "stylelint-scss": "^6.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "license": "MIT",
   "author": {
     "name": "Lucas Mordzin",
@@ -19,6 +50,10 @@
   "keywords": [
     "framework",
     "scss",
-    "css"
+    "css",
+    "utility-first",
+    "responsive",
+    "dark-mode",
+    "rtl-support"
   ]
 }

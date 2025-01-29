@@ -1,0 +1,193 @@
+@use 'sass:map';
+
+// Property Abbreviations Map
+$prop-abbreviations: (
+  // Box Model
+  'margin': 'm',
+  'padding': 'p',
+  'width': 'w',
+  'height': 'h',
+  'min-width': 'minw',
+  'max-width': 'maxw',
+  'min-height': 'minh',
+  'max-height': 'maxh',
+
+  // Display & Position
+  'display': 'd',
+  'position': 'pos',
+  'float': 'fl',
+  'clear': 'cl',
+
+  // Flexbox
+  'flex': 'fx',
+  'flex-direction': 'fxd',
+  'flex-wrap': 'fxw',
+  'flex-grow': 'fxg',
+  'flex-shrink': 'fxs',
+  'justify-content': 'jc',
+  'align-items': 'ai',
+
+  // Grid
+  'grid-template-columns': 'gtc',
+  'gap': 'gap',
+
+  // Typography
+  'font-family': 'ff',
+  'font-size': 'fs',
+  'font-weight': 'fw',
+  'line-height': 'lh',
+  'text-align': 'ta',
+  'text-decoration': 'td',
+  'text-transform': 'tt',
+  'letter-spacing': 'ls',
+  'word-break': 'wb',
+  'word-wrap': 'ww',
+  'white-space': 'ws',
+
+  // Colors
+  'color': 'c',
+  'background-color': 'bg',
+  'border-color': 'bc',
+
+  // Border
+  'border': 'b',
+  'border-width': 'bw',
+  'border-style': 'bs',
+  'border-radius': 'br',
+
+  // Effects
+  'opacity': 'op',
+  'box-shadow': 'sh',
+  'transform': 'tf',
+  'transition': 'ts',
+  'animation': 'an',
+  'filter': 'ft',
+  'backdrop-filter': 'bft',
+
+  // Position
+  'top': 't',
+  'right': 'r',
+  'bottom': 'b',
+  'left': 'l',
+  'z-index': 'z',
+
+  // Other
+  'cursor': 'cur',
+  'pointer-events': 'pe',
+  'user-select': 'us',
+  'overflow': 'of',
+  'overflow-x': 'ofx',
+  'overflow-y': 'ofy',
+  'object-fit': 'obj',
+  'aspect-ratio': 'ar',
+  'scroll-behavior': 'scr'
+) !default;
+
+// Value Abbreviations Map
+$value-abbreviations: (
+  // Display
+  'none': 'n',
+  'block': 'b',
+  'inline': 'i',
+  'inline-block': 'ib',
+  'flex': 'fx',
+  'grid': 'g',
+
+  // Position
+  'static': 's',
+  'relative': 'r',
+  'absolute': 'a',
+  'fixed': 'f',
+  'sticky': 'st',
+
+  // Flex/Grid
+  'row': 'r',
+  'column': 'c',
+  'wrap': 'w',
+  'nowrap': 'nw',
+  'space-between': 'sb',
+  'space-around': 'sa',
+  'flex-start': 'fs',
+  'flex-end': 'fe',
+  'center': 'c',
+  'stretch': 's',
+
+  // Colors
+  'white': 'w',
+  'black': 'b',
+  'transparent': 't',
+  'primary': 'p',
+  'secondary': 's',
+  'success': 'suc',
+  'danger': 'dng',
+  'warning': 'wrn',
+  'info': 'inf',
+  'light': 'l',
+  'dark': 'd',
+
+  // Text
+  'left': 'l',
+  'right': 'r',
+  'justify': 'j',
+  'uppercase': 'up',
+  'lowercase': 'low',
+  'capitalize': 'cap',
+  'normal': 'n',
+  'italic': 'i',
+  'underline': 'u',
+  'line-through': 'lt',
+
+  // Border
+  'solid': 'sol',
+  'dashed': 'das',
+  'dotted': 'dot',
+
+  // Other
+  'auto': 'a',
+  'hidden': 'h',
+  'visible': 'v',
+  'scroll': 's',
+  'pointer': 'ptr',
+  'default': 'def',
+  'contain': 'con',
+  'cover': 'cov',
+  'fill': 'f'
+) !default;
+
+// Direction Abbreviations
+$direction-abbreviations: (
+  'top': 't',
+  'right': 'r',
+  'bottom': 'b',
+  'left': 'l',
+  'x': 'x',
+  'y': 'y',
+) !default;
+
+// Function to get property abbreviation
+@function get-prop-abbreviations($property) {
+  @return map.get($prop-abbreviations, $property) or $property;
+}
+
+// Function to get value abbreviation
+@function get-value-abbreviations($value) {
+  @return map.get($value-abbreviations, $value) or $value;
+}
+
+// Function to get direction abbreviation
+@function get-direction-abbreviations($direction) {
+  @return map.get($direction-abbreviations, $direction) or $direction;
+}
+
+// Function to generate class name
+@function generate-class-name($property, $value, $direction: null) {
+  $prop-abbreviations: get-prop-abbreviations($property);
+  $value-abbreviations: get-value-abbreviations($value);
+
+  @if $direction {
+    $dir-abbreviations: get-direction-abbreviations($direction);
+    @return '#{$prop-abbreviations}#{$dir-abbreviations}#{$value-abbreviations}';
+  }
+
+  @return '#{$prop-abbreviations}#{$value-abbreviations}';
+}

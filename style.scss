@@ -1,0 +1,302 @@
+@use 'reset' as *;
+@use 'config' as *;
+@use 'mixins' as *;
+@use 'abbreviations' as *;
+@use 'sass:meta';
+@use 'sass:list';
+@use 'sass:map';
+
+// Property Maps Configuration
+$property-maps: (
+  'margin': (
+    scale: true,
+    variants: (
+      '': all,
+      't': top,
+      'r': right,
+      'b': bottom,
+      'l': left,
+      'x': (
+        left,
+        right,
+      ),
+      'y': (
+        top,
+        bottom,
+      ),
+    ),
+  ),
+  'padding': (
+    scale: true,
+    variants: (
+      '': all,
+      't': top,
+      'r': right,
+      'b': bottom,
+      'l': left,
+      'x': (
+        left,
+        right,
+      ),
+      'y': (
+        top,
+        bottom,
+      ),
+    ),
+  ),
+  'width': (
+    scale: true,
+  ),
+  'height': (
+    scale: true,
+  ),
+  'color': (
+    values: $colors,
+    responsive: true,
+  ),
+  'background-color': (
+    values: $colors,
+    responsive: true,
+  ),
+  'border-color': (
+    values: $colors,
+    responsive: true,
+  ),
+  'border-width': (
+    values: $border-widths,
+    responsive: true,
+  ),
+  'border-radius': (
+    values: $border-radius,
+    responsive: true,
+  ),
+  'font-family': (
+    values: $font-families,
+    responsive: true,
+  ),
+  'box-shadow': (
+    values: $shadows,
+    responsive: true,
+  ),
+) !default;
+
+// Core Scale Generator with Validation
+@function generate-scales($start: $scale-start, $count: $scale-count) {
+  // Validate input parameters
+  @if meta.type-of($start) != 'number' {
+    @error "Scale start must be a number, got #{meta.type-of($start)}";
+  }
+  @if meta.type-of($count) != 'number' {
+    @error "Scale count must be a number, got #{meta.type-of($count)}";
+  }
+  @if $count < 1 {
+    @error "Scale count must be greater than 0";
+  }
+  @if $start <= 0 {
+    @error "Scale start must be greater than 0";
+  }
+
+  $scale: ();
+  $a: $start;
+  $b: $start * 2;
+
+  @for $i from 1 through $count {
+    $scale: list.append($scale, $a);
+    $temp: $a + $b;
+    $a: $b;
+    $b: $temp;
+  }
+
+  @return $scale;
+}
+
+// Class Generator
+@mixin generate-classes() {
+  $scale: generate-scales();
+
+  // Generate scale-based classes
+  @each $property, $config in $property-maps {
+    @if map.get($config, scale) {
+      @each $value in $scale {
+        $index: list.index($scale, $value);
+
+        @if map.has-key($config, variants) {
+          @each $direction, $sides in map.get($config, variants) {
+            $class-name: generate-class-name($property, $index, $direction);
+
+            .#{$class-name} {
+              @if $sides == all {
+                #{$property}: var(--#{$index});
+              } @else if meta.type-of($sides) == list {
+                @each $side in $sides {
+                  #{$property}-#{$side}: var(--#{$index});
+                }
+              } @else {
+                #{$property}-#{$sides}: var(--#{$index});
+              }
+            }
+
+            // Responsive variants
+            @each $breakpoint, $width in $breakpoints {
+              @include breakpoint($breakpoint) {
+                .#{$class-name}\:#{$breakpoint} {
+                  @if $sides == all {
+                    #{$property}: var(--#{$index});
+                  } @else if meta.type-of($sides) == list {
+                    @each $side in $sides {
+                      #{$property}-#{$side}: var(--#{$index});
+                    }
+                  } @else {
+                    #{$property}-#{$sides}: var(--#{$index});
+                  }
+                }
+              }
+            }
+          }
+        } @else {
+          $class-name: generate-class-name($property, $index);
+
+          .#{$class-name} {
+            #{$property}: var(--#{$index});
+          }
+
+          // Responsive variants
+          @each $breakpoint, $width in $breakpoints {
+            @include breakpoint($breakpoint) {
+              .#{$class-name}\:#{$breakpoint} {
+                #{$property}: var(--#{$index});
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Generate value-based classes
+    @if map.has-key($config, values) {
+      @each $value-name, $value in map.get($config, values) {
+        $class-name: generate-class-name($property, $value-name);
+
+        .#{$class-name} {
+          #{$property}: $value;
+        }
+
+        // Responsive variants
+        @if map.get($config, responsive) {
+          @each $breakpoint, $width in $breakpoints {
+            @include breakpoint($breakpoint) {
+              .#{$class-name}\:#{$breakpoint} {
+                #{$property}: $value;
+              }
+            }
+          }
+        }
+
+        // State variants
+        @include hover {
+          .#{$class-name}\:hover {
+            #{$property}: $value;
+          }
+        }
+
+        @include focus {
+          .#{$class-name}\:focus {
+            #{$property}: $value;
+          }
+        }
+
+        @include active {
+          .#{$class-name}\:active {
+            #{$property}: $value;
+          }
+        }
+      }
+    }
+  }
+}
+
+// CSS Variables Generator
+@mixin generate-variables() {
+  $scale: generate-scales();
+
+  :root {
+    // Scale variables
+    @each $value in $scale {
+      $index: list.index($scale, $value);
+      --#{$index}: #{$value}rem;
+    }
+
+    // Color variables
+    @each $name, $value in $colors {
+      --color-#{$name}: #{$value};
+    }
+  }
+
+  // Dark mode variables
+  @include dark-mode {
+    :root {
+      --color-light: #{map.get($colors, 'dark')};
+      --color-dark: #{map.get($colors, 'light')};
+    }
+  }
+}
+
+// Print Media Query Support
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  a[href]:after {
+    content: ' (' attr(href) ')';
+  }
+}
+
+// CSS Grid Specific Utilities
+@mixin generate-grid-utilities() {
+  // Grid Template Columns
+  @for $i from 1 through 12 {
+    .grid-cols-#{$i} {
+      grid-template-columns: repeat(#{$i}, minmax(0, 1fr));
+    }
+  }
+
+  // Grid Column Span
+  @for $i from 1 through 12 {
+    .col-span-#{$i} {
+      grid-column: span #{$i} / span #{$i};
+    }
+  }
+
+  // Grid Row Span
+  @for $i from 1 through 6 {
+    .row-span-#{$i} {
+      grid-row: span #{$i} / span #{$i};
+    }
+  }
+
+  // Grid Auto Flow
+  .grid-flow-row {
+    grid-auto-flow: row;
+  }
+  .grid-flow-col {
+    grid-auto-flow: column;
+  }
+  .grid-flow-dense {
+    grid-auto-flow: dense;
+  }
+}
+
+// Generate Everything
+@include generate-variables();
+@include generate-classes();
+@include generate-grid-utilities();
