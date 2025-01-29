@@ -1,0 +1,269 @@
+// Core Scale Generator
+@function generate-scales($start: 0.25, $count: 8) {
+  $scale: ();
+  $a: $start;
+  $b: $start * 2;
+
+  @for $i from 1 through $count {
+    $scale: append($scale, $a);
+    $temp: $a + $b;
+    $a: $b;
+    $b: $temp;
+  }
+
+  @return $scale;
+}
+
+// Property Mappings
+$property-maps: (
+  // Spacing Properties
+  'm':
+    (
+      property: margin,
+      variants: (
+        '': all,
+        't': top,
+        'r': right,
+        'b': bottom,
+        'l': left,
+        'x': (
+          left,
+          right
+        ),
+        'y': (
+          top,
+          bottom
+        )
+      ),
+      scale: true
+    ),
+  'p': (
+    property: padding,
+    variants: (
+      '': all,
+      't': top,
+      'r': right,
+      'b': bottom,
+      'l': left,
+      'x': (
+        left,
+        right
+      ),
+      'y': (
+        top,
+        bottom
+      )
+    ),
+    scale: true
+  ),
+
+  // Display & Position
+  'd':
+    (
+      property: display,
+      values: (
+        'n': none,
+        'b': block,
+        'i': inline,
+        'ib': inline-block,
+        'f': flex,
+        'g': grid
+      ),
+      scale: false
+    ),
+  'pos': (
+    property: position,
+    values: (
+      's': static,
+      'r': relative,
+      'a': absolute,
+      'f': fixed,
+      'st': sticky
+    ),
+    scale: false
+  ),
+
+  // Typography
+  'fs':
+    (
+      property: font-size,
+      scale: true
+    ),
+  'fw': (
+    property: font-weight,
+    values: (
+      '1': 100,
+      '2': 200,
+      '3': 300,
+      '4': 400,
+      '5': 500,
+      '6': 600,
+      '7': 700,
+      '8': 800,
+      '9': 900
+    ),
+    scale: false
+  ),
+  'ta': (
+    property: text-align,
+    values: (
+      'l': left,
+      'c': center,
+      'r': right,
+      'j': justify
+    ),
+    scale: false
+  ),
+
+  // Flexbox
+  'fxd':
+    (
+      property: flex-direction,
+      values: (
+        'r': row,
+        'c': column,
+        'rr': row-reverse,
+        'cr': column-reverse
+      ),
+      scale: false
+    ),
+  'jc': (
+    property: justify-content,
+    values: (
+      'fs': flex-start,
+      'fe': flex-end,
+      'c': center,
+      'sb': space-between,
+      'sa': space-around
+    ),
+    scale: false
+  ),
+  'ai': (
+    property: align-items,
+    values: (
+      'fs': flex-start,
+      'fe': flex-end,
+      'c': center,
+      's': stretch,
+      'b': baseline
+    ),
+    scale: false
+  ),
+
+  // Grid
+  'gc':
+    (
+      property: grid-template-columns,
+      values: (
+        '1': repeat(1, 1fr),
+        '2': repeat(2, 1fr),
+        '3': repeat(3, 1fr),
+        '4': repeat(4, 1fr)
+      ),
+      scale: false
+    ),
+  'gg': (
+    property: gap,
+    scale: true
+  ),
+
+  // Colors & Backgrounds
+  'c':
+    (
+      property: color,
+      values: (
+        'w': white,
+        'b': black,
+        't': transparent
+      ),
+      scale: false
+    ),
+  'bg': (
+    property: background-color,
+    values: (
+      'w': white,
+      'b': black,
+      't': transparent
+    ),
+    scale: false
+  ),
+
+  // Border
+  'br':
+    (
+      property: border-radius,
+      values: (
+        'n': 0,
+        's': 0.25rem,
+        'm': 0.5rem,
+        'l': 1rem,
+        'f': 9999px
+      ),
+      scale: false
+    )
+);
+
+// Class Generator
+@mixin generate-classes() {
+  $scale: generate-scales();
+
+  @each $prefix, $config in $property-maps {
+    // Handle properties with scale
+    @if map-get($config, scale) {
+      @each $value in $scale {
+        $index: index($scale, $value);
+
+        @if map-has-key($config, variants) {
+          @each $variant, $sides in map-get($config, variants) {
+            $property-name: map-get($config, property);
+
+            @if $sides == all {
+              .#{$prefix}#{$variant}#{$index} {
+                #{$property-name}: var(--#{$index});
+              }
+            } @else if type-of($sides) == list {
+              .#{$prefix}#{$variant}#{$index} {
+                @each $side in $sides {
+                  #{$property-name}-#{$side}: var(--#{$index});
+                }
+              }
+            } @else {
+              .#{$prefix}#{$variant}#{$index} {
+                #{$property-name}-#{$sides}: var(--#{$index});
+              }
+            }
+          }
+        } @else {
+          .#{$prefix}#{$index} {
+            #{map-get($config, property)}: var(--#{$index});
+          }
+        }
+      }
+    }
+
+    // Handle properties with fixed values
+    @if map-has-key($config, values) {
+      @each $suffix, $value in map-get($config, values) {
+        .#{$prefix}-#{$suffix} {
+          #{map-get($config, property)}: $value;
+        }
+      }
+    }
+  }
+}
+
+// CSS Variables Generator
+@mixin generate-variables() {
+  $scale: generate-scales();
+
+  :root {
+    @each $value in $scale {
+      $index: index($scale, $value);
+      --#{$index}: #{$value}rem;
+    }
+  }
+}
+
+// Generate Everything
+@include generate-variables();
+@include generate-classes();
